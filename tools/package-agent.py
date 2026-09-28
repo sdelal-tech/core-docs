@@ -11,7 +11,7 @@ def package_agent(root: Path) -> None:
     files = [root / name for name in ["AGENTS.md", "README.md", "chapters.json"]]
     files += sorted((root / "chapters").glob("*.md"))
     files += sorted((root / "reference").glob("*.json"))
-    links = re.compile(r"https://sdelal-tech\.github\.io/core-docs/([^\s)\"<>?#]+\.(?:md|json))")
+    links = re.compile(r"https://github\.sdelal\.tech/core-docs/([^\s)\"<>?#]+\.(?:md|json))")
     with ZipFile(root / "core-agent.zip", "w") as archive:
         for path in sorted(files):
             name = path.relative_to(root).as_posix()

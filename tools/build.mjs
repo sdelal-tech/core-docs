@@ -72,7 +72,7 @@ for(const [index,c] of chapters.entries()) {
  };
  renderer.link=function({href,title,tokens}) {
   let target=href;const file=href?.split('/').pop()?.split('#')[0],found=chapters.find(x=>`${x.id}.md`===file);
-  if(href==='https://sdelal-tech.github.io/core-docs/core-agent.zip')return `<a class="core-button core-button-primary" href="core-agent.zip" download="core-agent-v${version}-${updatedDate}.zip">${this.parser.parseInline(tokens)}</a>`;
+  if(href==='https://github.sdelal.tech/core-docs/core-agent.zip')return `<a class="core-button core-button-primary" href="core-agent.zip" download="core-agent-v${version}-${updatedDate}.zip">${this.parser.parseInline(tokens)}</a>`;
   if(found)target='#'+found.id;else if(href==='../README.md')target='#overview';else if(href?.startsWith('../'))target=href.slice(3);
   return `<a class="core-link" href="${esc(target)}"${title?` title="${esc(title)}"`:''}>${this.parser.parseInline(tokens)}</a>`;
  };

@@ -4,7 +4,7 @@
 
 ## Скачать комплект
 
-[Скачать ZIP для агента](https://sdelal-tech.github.io/core-docs/core-agent.zip)
+[Скачать ZIP для агента](https://github.sdelal.tech/core-docs/core-agent.zip)
 
 В архиве одна папка `core/`: правила `AGENTS.md`, оглавление, все Markdown-главы, примеры и JSON-справочники классов, токенов и JavaScript. HTML-мануала и исходников фреймворка в архиве нет. Комплект автоматически пересобирается вместе с документацией.
 
@@ -45,7 +45,7 @@
 
 ## Читать выборочно
 
-Сначала [архитектуру](architecture.md), [наследование](inheritance.md) и только необходимые компоненты. [Индекс классов](https://sdelal-tech.github.io/core-docs/chapters/class-index.md) содержит проверенные по тексту источника имена из примеров, но не все классы Core. `reference/examples.json` хранит HTML/CSS рецептов, `reference/tokens.json` — документированные значения. Пути `reference/` считаются от каталога комплекта.
+Сначала [архитектуру](architecture.md), [наследование](inheritance.md) и только необходимые компоненты. [Индекс классов](https://github.sdelal.tech/core-docs/chapters/class-index.md) содержит проверенные по тексту источника имена из примеров, но не все классы Core. `reference/examples.json` хранит HTML/CSS рецептов, `reference/tokens.json` — документированные значения. Пути `reference/` считаются от каталога комплекта.
 
 ## Порядок реализации
 

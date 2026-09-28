@@ -19,7 +19,7 @@ Latest изменяем. Для неизвестного имени или ра�
 - JS: [выбор модуля](chapters/javascript.md), затем только его файл `chapters/js-*.md`.
 - Составные решения: [рецепты](chapters/recipes.md), [риски](chapters/pitfalls.md).
 
-Не загружай весь index.html в контекст. Для поиска доступны [классы](https://sdelal-tech.github.io/core-docs/reference/classes.json), [токены](https://sdelal-tech.github.io/core-docs/reference/tokens.json), [примеры](reference/examples.json) и [JS-контракты](reference/javascript.json). Каталог классов содержит явные селекторы; динамические attribute-селекторы и классы, создаваемые JS, смотри в тематическом разделе.
+Не загружай весь index.html в контекст. Для поиска доступны [классы](https://github.sdelal.tech/core-docs/reference/classes.json), [токены](https://github.sdelal.tech/core-docs/reference/tokens.json), [примеры](reference/examples.json) и [JS-контракты](reference/javascript.json). Каталог классов содержит явные селекторы; динамические attribute-селекторы и классы, создаваемые JS, смотри в тематическом разделе.
 
 ## Правила CSS
 

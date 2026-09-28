@@ -32,9 +32,9 @@
 
 ## Справочники и сборка
 
-PostCSS разбирает пять CSS-файлов документированной версии после проверки SHA-256. [Классы](https://sdelal-tech.github.io/core-docs/reference/classes.json), [токены](https://sdelal-tech.github.io/core-docs/reference/tokens.json) и [индекс](https://sdelal-tech.github.io/core-docs/chapters/class-index.md) генерируются автоматически. Каталог классов основан на `core.css`, каталог токенов включает все четыре темы. Каталоги показывают исходные декларации, строки и области, а не вычисленные default. Счётчики находятся в самих каталогах.
+PostCSS разбирает пять CSS-файлов документированной версии после проверки SHA-256. [Классы](https://github.sdelal.tech/core-docs/reference/classes.json), [токены](https://github.sdelal.tech/core-docs/reference/tokens.json) и [индекс](https://github.sdelal.tech/core-docs/chapters/class-index.md) генерируются автоматически. Каталог классов основан на `core.css`, каталог токенов включает все четыре темы. Каталоги показывают исходные декларации, строки и области, а не вычисленные default. Счётчики находятся в самих каталогах.
 
-Редактируемые источники находятся в `content/`: главы, JSON примеров и метаданных, код просмотрщика. `npm run build` заново создаёт игнорируемый `docs/`: 42 главы, 87 примера, HTML, JSON и [агентский ZIP](https://sdelal-tech.github.io/core-docs/core-agent.zip) с Markdown/JSON без HTML. Оформление задаётся штатным Core; собственных CSS-правил нет. Версия в интерфейсе и метаданных сборки берётся из одного манифеста.
+Редактируемые источники находятся в `content/`: главы, JSON примеров и метаданных, код просмотрщика. `npm run build` заново создаёт игнорируемый `docs/`: 42 главы, 87 примера, HTML, JSON и [агентский ZIP](https://github.sdelal.tech/core-docs/core-agent.zip) с Markdown/JSON без HTML. Оформление задаётся штатным Core; собственных CSS-правил нет. Версия в интерфейсе и метаданных сборки берётся из одного манифеста.
 
 ## Текущие проверки
 

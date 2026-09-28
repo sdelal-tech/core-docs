@@ -59,7 +59,7 @@ function setTheme(mode) {
 
 `core-radio-group` и `core-radio-group-inline` оформляют горизонтальный выбор сегментами. Сохраняйте разметку `label.core-button-radio > input[type="radio"] + .core-radio-label` и одинаковый `name`: это нативная radio-группа с управлением стрелками, а не tabs API. Минимальная высота сегмента по умолчанию 40 px, в группах xs/s/l — 24/28/44 px; длинные подписи переносятся и увеличивают высоту. Проверьте доступную ширину и disabled-состояния конкретной группы.
 
-Тема сохраняет стрелку disabled-select и видимый keyboard focus, уменьшает непрозрачность недоступных контролов, отключает переходы контролов при `prefers-reduced-motion: reduce`. Собственные токены `--nkui-*` и переопределения Core перечислены в [справочнике токенов](https://sdelal-tech.github.io/core-docs/reference/tokens.json).
+Тема сохраняет стрелку disabled-select и видимый keyboard focus, уменьшает непрозрачность недоступных контролов, отключает переходы контролов при `prefers-reduced-motion: reduce`. Собственные токены `--nkui-*` и переопределения Core перечислены в [справочнике токенов](https://github.sdelal.tech/core-docs/reference/tokens.json).
 
 ## Проектная тема
 
