@@ -18,7 +18,7 @@ test('agent download is a complete portable Markdown and JSON package without ru
  assert.deepEqual(JSON.parse(files['core/reference/examples.json']),JSON.parse(read('docs/reference/examples.json','utf8')));
  assert.deepEqual(JSON.parse(files['core/reference/source-manifest.json']),JSON.parse(read('docs/reference/source-manifest.json','utf8')));
  for(const [name,body] of Object.entries(files)) {
-  assert.doesNotMatch(body,/https:\/\/nikitakozin\.github\.io\/core-docs\/[^\s)]+\.(?:md|json)/,`${name}: documentation should resolve locally`);
+  assert.doesNotMatch(body,/https:\/\/sdelal-tech\.github\.io\/core-docs\/[^\s)]+\.(?:md|json)/,`${name}: documentation should resolve locally`);
   if(!name.endsWith('.md'))continue;
   for(const [,href] of body.replace(/```[\s\S]*?```/g,'').matchAll(/\[[^\]]*\]\(([^\s)]+)(?:\s+"[^"]*")?\)/g)) {
    if(/^(https?:|#|mailto:)/.test(href))continue;

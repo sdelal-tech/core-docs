@@ -1,12 +1,12 @@
 # Core — руководство
 
-[Открыть HTML](https://nikitakozin.github.io/core-docs/) · [Правила агента](AGENTS.md) · [Разработка и сборка](https://github.com/nikitakozin/core-docs#readme)
+[Открыть HTML](https://sdelal-tech.github.io/core-docs/) · [Правила агента](AGENTS.md) · [Разработка и сборка](https://github.com/sdelal-tech/core-docs#readme)
 
 42 главы и 87 примера. Проверенная версия, дата и хеши указаны в [манифесте](reference/source-manifest.json). Runtime использует изменяемый latest; изменения API и границы проверки — в [источниках и проверках](chapters/verification.md).
 
 ## Локально для агента
 
-[Скачайте ZIP](https://nikitakozin.github.io/core-docs/core-agent.zip) и поместите папку `core` из архива в `docs/` вашего проекта. Получится `docs/core/AGENTS.md`. Дополните существующий корневой `AGENTS.md` проекта блоком из [инструкции подключения](chapters/agent-workflow.md), затем отправьте агенту приведённый там первый запрос.
+[Скачайте ZIP](https://sdelal-tech.github.io/core-docs/core-agent.zip) и поместите папку `core` из архива в `docs/` вашего проекта. Получится `docs/core/AGENTS.md`. Дополните существующий корневой `AGENTS.md` проекта блоком из [инструкции подключения](chapters/agent-workflow.md), затем отправьте агенту приведённый там первый запрос.
 
 В комплекте только Markdown и JSON; сборка и установка зависимостей для его использования не нужны. Все справочники доступны локально. При обновлении заменяйте только `docs/core/`, сохраняя собственные инструкции в корневом `AGENTS.md`. Core в приложении подключается с CDN и требует сети.
 
@@ -51,6 +51,6 @@
 - [Доступность, совместимость и интеграция](chapters/accessibility.md)
 - [Ограничения и реестр рисков](chapters/pitfalls.md)
 - [Порядок работы агента и Harness](chapters/agent-workflow.md)
-- [Индекс классов и примеров](https://nikitakozin.github.io/core-docs/chapters/class-index.md)
+- [Индекс классов и примеров](https://sdelal-tech.github.io/core-docs/chapters/class-index.md)
 - [Справочник токенов](chapters/token-reference.md)
 - [Источники и проверки](chapters/verification.md)
