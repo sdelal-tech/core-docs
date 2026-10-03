@@ -2,7 +2,7 @@
 function createDocsThemeController(doc,linkId) {
  const root=doc.documentElement;
  const names=['core','nk','ss','nkui'];
- let design='nk',mode='light',revision=0;
+ let design=root.dataset.design||'nk',mode=root.dataset.theme||'light',revision=0;
  const apply=()=>{
   const scope=(node,value)=>{
    node.classList.remove('core-theme-light','core-theme-dark','core-theme-ss-light','core-theme-ss-dark');

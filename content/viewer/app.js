@@ -4,14 +4,12 @@
  const data=JSON.parse(document.getElementById('manual-data').textContent);
  const root=document.documentElement,chapters=new Map(data.chapters.map(c=>[c.id,c])),examples=new Map(data.examples.map(e=>[e.id,e]));
  const instances=new Map(),search=document.getElementById('search'),results=document.getElementById('search-results'),sidebar=document.getElementById('sidebar'),nav=document.getElementById('chapter-nav'),menuButton=document.getElementById('menu-button'),themeButton=document.getElementById('theme-toggle'),themeSelect=document.getElementById('theme-select');
- const themeController=createDocsThemeController(document,'shell-theme');
- let design='nk',preferredDesign='nk';
- try {const saved=localStorage.getItem('core-docs-design');if(['core','nk','ss','nkui'].includes(saved))preferredDesign=saved;} catch {}
+ const themeController=docsThemeStartup.controller;
+ let design=root.dataset.design||'nk',preferredDesign=design;
  const norm=value=>String(value).toLocaleLowerCase('ru').replaceAll('ё','е');
  const esc=value=>String(value).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;');
  const visible=(node,show)=>node.classList.toggle('core-hide',!show);
- let activeId='',activeHeadings=[],anchorLock=null,anchorTimer=0,theme='light';
- try {if(localStorage.getItem('core-docs-theme')==='dark') theme='dark';} catch {}
+ let activeId='',activeHeadings=[],anchorLock=null,anchorTimer=0,theme=root.dataset.theme||'light';
  const shell=document.getElementById('document-shell'),menu=document.getElementById('mobile-menu'),panel=document.getElementById('mobile-panel'),slot=document.getElementById('sidebar-slot');
  const topbar=document.querySelector('.topbar'),mobile=matchMedia('(max-width:997px)');
  function closeMenu(restoreFocus=false){
@@ -85,7 +83,7 @@
   document.title=`${chapters.get(id).navTitle} — Core`;activeHeadings=[...document.querySelectorAll(`#${CSS.escape(id)} h2[id], #${CSS.escape(id)} h3[id]`)];
   setActiveSubsection('');
   const fromMenu=menuButton.getAttribute('aria-expanded')==='true';closeMenu();releaseAnchor();if(target.includes('--')){anchorLock=target;anchorTimer=setTimeout(releaseAnchor,18000);}
-  document.querySelectorAll(`#${CSS.escape(id)} .example`).forEach(card=>{if(card.dataset.loaded!=='true')loadDemo(card);else{layoutDemo(instances.get(card.dataset.example));sendTheme(instances.get(card.dataset.example));}});
+  if(!document.body.hidden)document.querySelectorAll(`#${CSS.escape(id)} .example`).forEach(card=>{if(card.dataset.loaded!=='true')loadDemo(card);else{layoutDemo(instances.get(card.dataset.example));sendTheme(instances.get(card.dataset.example));}});
   requestAnimationFrame(()=>{if(anchorLock){positionAnchor();setActiveSubsection(target);}else window.scrollTo({top:0,behavior:'instant'});if(fromMenu)document.getElementById(target.includes('--')?target:`${id}--title`)?.focus({preventScroll:true});});
  }
  window.addEventListener('hashchange',route);
@@ -178,11 +176,11 @@
     const script=`${createDocsThemeController.toString()};(${childRuntime.toString()})(${JSON.stringify(config)});`;
     const styles=(example.styles||[]).map(url=>`<link rel="stylesheet" href="${esc(url)}">`).join('');
     const module=example.js ? `<script type="module">${example.js.replace(/<\/script/gi,'<\\/script')}\nwindow.dispatchEvent(new Event('core-docs-script-ready'));<\/script>` : '';
-    return `<!doctype html><html lang="ru" class="core-solo core-theme-${esc(theme)}" data-theme="${esc(theme)}"><head>
+    return `<!doctype html><html lang="ru" class="core-solo ${design==='ss'?'core-theme-ss-':'core-theme-'}${esc(theme)}" data-theme="${esc(theme)}" data-design="${esc(design)}"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' https://cdn.sdelal.tech; script-src 'unsafe-inline' https://cdn.sdelal.tech; img-src data: https:; font-src https: data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
 <link id="core-css" rel="stylesheet" href="https://cdn.sdelal.tech/core/latest/core.css" onload="this.dataset.state='ok'" onerror="this.dataset.state='error'">
-<link id="nk-css" rel="stylesheet" href="https://cdn.sdelal.tech/core/latest/theme-nk.css" onload="this.dataset.state='ok'" onerror="this.dataset.state='error'">
+<link id="nk-css" rel="stylesheet" ${design==='core'?'data-state="ok"':`href="https://cdn.sdelal.tech/core/latest/theme-${esc(design)}.css"`} onload="this.dataset.state='ok'" onerror="this.dataset.state='error'">
 ${styles}</head>
 <body class="core-bg core-color"><main id="demo-root" class="core-col core-g-0x core-p-8x">${example.html}</main><script>${script}<\/script>${module}</body></html>`;
   }
@@ -289,7 +287,7 @@ ${styles}</head>
     themeSelect.disabled=true;
     const ok=await themeController.design(value);
     themeSelect.disabled=false;
-    if(ok){design=value;themeSelect.value=design;instances.forEach(sendTheme);checkShell();if(persist)try{localStorage.setItem('core-docs-design',design);}catch{}}
+    if(ok){design=value;themeSelect.value=design;docsThemeStartup.clearWarning();instances.forEach(sendTheme);checkShell();if(persist)try{localStorage.setItem('core-docs-design',design);}catch{}}
     else if(ok===false){themeSelect.value=design;if(document.getElementById('shell-theme').dataset.state==='error')checkShell();else{shellStatus.textContent='Тема не загрузилась. Сохранено прежнее оформление; попробуйте ещё раз.';visible(shellStatus,true);}}
   }
   themeSelect.addEventListener('change',()=>{preferredDesign=themeSelect.value;chooseDesign(preferredDesign);});
@@ -299,7 +297,8 @@ ${styles}</head>
     const probe=document.createElement('div');probe.className='core-row';document.body.append(probe);
     const ok=getComputedStyle(probe).display==='flex';probe.remove();
     if(!ok){shellStatus.textContent='Оформление Core не загрузилось. Проверьте доступ к CDN и обновите страницу.';visible(shellStatus,true);}
-    else if(document.getElementById('shell-theme').dataset.state==='error'){shellStatus.textContent='Тема NK не загрузилась. Доступен базовый Core.';visible(shellStatus,true);}
+    else if(document.getElementById('shell-theme').dataset.state==='error'){shellStatus.textContent=`Тема ${preferredDesign.toUpperCase()} не загрузилась. Доступен базовый Core.`;visible(shellStatus,true);}
+    else if(window.docsThemeStartup?.warning){shellStatus.textContent=docsThemeStartup.warning;visible(shellStatus,true);}
     else visible(shellStatus,false);
   }
   for(const id of ['shell-core','shell-theme']) {
@@ -307,5 +306,11 @@ ${styles}</head>
     document.getElementById(id).addEventListener('error',checkShell);
   }
   checkShell(); applyTheme(); route();
-  chooseDesign(preferredDesign,false);
+  themeSelect.value=design;
+  document.addEventListener('docs-theme-startup-ready',()=>{
+    design=root.dataset.design;themeSelect.value=design;instances.forEach(sendTheme);
+    document.querySelectorAll(`#${CSS.escape(activeId)} .example`).forEach(card=>{if(card.dataset.loaded!=='true')loadDemo(card);});
+    checkShell();positionAnchor();
+  });
+  docsThemeStartup.ready();
 })();

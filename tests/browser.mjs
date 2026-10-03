@@ -9,6 +9,7 @@ import {checkInverseTheme} from './inverse-theme.mjs';
 import {checkCatalogue,checkMediaCrops} from './catalogue.mjs';
 import {checkDemoWidths} from './demo-width.mjs';
 import {checkCoreVersion} from './core-version.mjs';
+import {checkStartup} from './startup.mjs';
 const failuresOnly=process.argv.includes('--failures'),root=resolve('docs'),out=resolve('test-results');mkdirSync(out,{recursive:true});
 const data=JSON.parse(read('docs/reference/examples.json','utf8')).examples;
 const chapters=JSON.parse(read('docs/chapters.json','utf8'));
@@ -35,6 +36,7 @@ try {
  check('shell CSS loaded',await page.locator('#shell-status').isHidden());
  check('42 chapters / 87 cards',await page.locator('.chapter').count()===42&&await page.locator('.example').count()===87);
  if(!failuresOnly) {
+  await checkStartup(browser,url,check,out);
   await checkHighlighting(browser,url,check);
   await checkDemoWidths(browser,url,check);
   await checkCoreVersion(browser,url,check);

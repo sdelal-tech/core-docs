@@ -121,16 +121,20 @@ for(const [index,c] of chapters.entries()) {
 const navigation=[...groups].map(([name,items],index)=>`<section class="nav-group core-m-b-6x">${index?`<h2 class="core-text core-text-xs core-text-upper core-text-bold core-color core-muted-6x core-p-3x core-p-l-5x core-p-r-5x core-border core-border-b core-m-b-3x">${esc(name)}</h2>`:''}${items.join('\n')}</section>`).join('\n');
 const data=JSON.stringify({version,chapters,examples,searchSections}).replaceAll('<','\\u003c');
 const themeRuntime=read('content/viewer/themes.js','utf8');
+const startup=read('content/viewer/startup.js','utf8');
 const app=read('content/viewer/app.js','utf8').replaceAll('</script','<\\/script');
 const html=`<!doctype html>
 <html lang="ru" class="core-solo core-col core-g-0x core-theme-light" data-theme="light"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Core — руководство</title>
 <meta name="description" content="Документация Core v${version}: ${chapters.length} раздела, ${examples.length} живых примера, CSS и JavaScript.">
-<link id="shell-core" rel="stylesheet" onload="this.dataset.state='ok'" onerror="this.dataset.state='error'" href="https://cdn.sdelal.tech/core/latest/core.css">
-<link id="shell-theme" rel="stylesheet" onload="this.dataset.state='ok'" onerror="this.dataset.state='error'" href="https://cdn.sdelal.tech/core/latest/theme-nk.css">
+<link id="shell-core" rel="stylesheet">
+<link id="shell-theme" rel="stylesheet">
+<script>${themeRuntime}\n${startup}</script>
+<noscript><link rel="stylesheet" href="https://cdn.sdelal.tech/core/latest/core.css"><link rel="stylesheet" href="https://cdn.sdelal.tech/core/latest/theme-nk.css"></noscript>
 <link id="syntax-light" rel="stylesheet" href="assets/highlight-light.css" media="not all">
 <link id="syntax-dark" rel="stylesheet" href="assets/highlight-dark.css" media="all">
 </head><body class="core-bg core-color core-w-full">
+<script>docsThemeStartup.hide();</script>
 <div id="document-shell" class="core-col core-g-0x">
 <header class="topbar ${headerSize} core-sticky core-row core-nowrap core-y-center core-g-6x m-core-g-3x core-p-8x core-p-l-10x core-p-r-20x m-core-p-6x m-core-p-l-8x m-core-p-r-8x core-bg core-border core-border-b">
 <a id="skip-link" class="core-fix core-fix-top-left core-button core-button-accent core-ghost" href="#main-content">К содержанию</a>
@@ -155,7 +159,6 @@ const html=`<!doctype html>
 <div id="menu-overlay" class="core-popup-overlay" aria-hidden="true"></div><div id="mobile-panel" class="core-popup core-popup-left core-w-140x"></div>
 </div>
 <script id="manual-data" type="application/json">${data}</script>
-<script>${themeRuntime}</script>
 <script>${app}</script>
 </body></html>\n`;
 write('docs/index.html',html);
