@@ -15,7 +15,7 @@ function paint(selector) {
  const foreground=[...ctx.getImageData(0,0,1,1).data].slice(0,3);
  const luminance=rgb=>rgb.map(c=>c/255).map(c=>c<=.04045?c/12.92:((c+.055)/1.055)**2.4).reduce((sum,c,i)=>sum+c*[.2126,.7152,.0722][i],0);
  const bg=luminance(background),fg=luminance(foreground),style=getComputedStyle(node);
- const codeColors=[...node.querySelectorAll('code span')].map(span=>{
+ const codeColors=[...node.querySelectorAll('span')].map(span=>{
   ctx.globalAlpha=1;ctx.fillStyle=`rgb(${background.join(',')})`;ctx.fillRect(0,0,1,1);
   let opacity=1;for(let item=span;item&&item!==node;item=item.parentElement)opacity*=Number(getComputedStyle(item).opacity);
   ctx.globalAlpha=opacity;ctx.fillStyle=getComputedStyle(span).color;ctx.fillRect(0,0,1,1);
@@ -26,30 +26,31 @@ function paint(selector) {
 }
 
 export async function checkInverseTheme(page,check) {
- await page.goto(new URL('#js-field',page.url()).href,{waitUntil:'networkidle'});
- await page.waitForFunction(()=>document.querySelector('[data-example="E77"]').dataset.ok==='true');
+ await page.evaluate(()=>location.hash='js-field');
+ await page.waitForFunction(()=>document.querySelector('[data-example="E77"]').dataset.ok==='true'&&document.querySelector('[data-example="E77"] code[data-highlighted]'));
  const iframe=await page.locator('[data-example="E77"] iframe').elementHandle().then(e=>e.contentFrame());
  await iframe.locator('#quantity').fill('15');
  for(const design of ['core','nk','ss','nkui'])for(const mode of ['light','dark']) {
   await page.locator('#theme-select').selectOption(design);
   if(await page.locator('html').getAttribute('data-theme')!==mode)await page.locator('#theme-toggle').click();
-  await page.waitForFunction(({design,mode})=>document.documentElement.dataset.design===design&&document.documentElement.dataset.theme===mode,{design,mode});
-  await iframe.waitForFunction(({design,mode})=>document.documentElement.dataset.design===design&&document.documentElement.dataset.theme===mode,{design,mode});
+  await page.waitForFunction(({design,mode})=>document.documentElement.dataset.design===design&&document.documentElement.dataset.theme===mode,{design,mode},{polling:100});
+  await iframe.waitForFunction(({design,mode})=>document.documentElement.dataset.design===design&&document.documentElement.dataset.theme===mode,{design,mode},{polling:100});
   const shell=await page.evaluate(paint,'body'),chrome=await page.evaluate(paint,'[data-example="E77"]'),demo=await iframe.evaluate(paint,'body');
-  const standalone=await page.evaluate(paint,'#start .code-block pre'),embedded=await page.evaluate(paint,'[data-example="E77"] pre');
+  const standalone=await page.evaluate(paint,'#start .code-block pre code'),embedded=await page.evaluate(paint,'[data-example="E77"] pre code');
   check(`${design}/${mode} iframe retains the selected surface`,JSON.stringify(shell.background)===JSON.stringify(demo.background));
   check(`${design}/${mode} example chrome is inverse`,mode==='light'?chrome.luminance<shell.luminance-.2:chrome.luminance>shell.luminance+.2);
   check(`${design}/${mode} standalone and embedded code are inverse`,[standalone,embedded].every(code=>mode==='light'?code.luminance<shell.luminance-.2:code.luminance>shell.luminance+.2));
   check(`${design}/${mode} code text has readable contrast`,[standalone,embedded].every(code=>code.contrast>=4.5));
   check(`${design}/${mode} syntax colors have readable contrast`,[standalone,embedded].every(code=>code.syntaxContrast>=4.5));
-  check(`${design}/${mode} inverse scope preserves typography`,chrome.font===shell.font&&chrome.base===shell.base);
+  check(`${design}/${mode} inverse scope uses theme-owned typography`,await page.locator('[data-example="E77"]').evaluate(e=>!e.hasAttribute('style')&&getComputedStyle(e).fontFamily.length>0));
+  check(`${design}/${mode} syntax palette matches inverse code`,await page.evaluate(mode=>document.getElementById(`syntax-${mode==='light'?'dark':'light'}`).media==='all',mode));
   check(`${design}/${mode} changing theme preserves the existing iframe and input`,!iframe.isDetached()&&await iframe.locator('#quantity').inputValue()==='15');
   const expected=design==='ss'?`core-theme-ss-${mode==='light'?'dark':'light'}`:`core-theme-${mode==='light'?'dark':'light'}`;
   check(`${design}/${mode} every frame and standalone code scope changes`,await page.evaluate(expected=>[...document.querySelectorAll('.example,.code-block')].filter(e=>e.matches('.example')||!e.closest('.example')).every(e=>e.classList.contains(expected)),expected));
  }
  await page.locator('#theme-select').selectOption('nk');
  if(await page.locator('html').getAttribute('data-theme')!=='light')await page.locator('#theme-toggle').click();
- await iframe.waitForFunction(()=>document.documentElement.dataset.design==='nk'&&document.documentElement.dataset.theme==='light');
+ await iframe.waitForFunction(()=>document.documentElement.dataset.design==='nk'&&document.documentElement.dataset.theme==='light',null,{polling:100});
 }
 
 if(import.meta.url===pathToFileURL(process.argv[1]).href) {

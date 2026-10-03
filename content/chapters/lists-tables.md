@@ -40,14 +40,14 @@ Core не превращает произвольную HTML-таблицу в �
 
 ### E51. Широкая таблица: контролируемая прокрутка
 
-Сравните 1200 и 390 px. При нехватке места таблица прокручивается внутри своей области; страница не расширяется. `min-width: 680px` — открытое ограничение этого рецепта. Перестройка без прокрутки показана ниже, в E67 и E68.
+Сравните 1200 и 390 px. При нехватке места таблица прокручивается внутри своей области; страница не расширяется. `core-w-320x` задаёт штатную ширину таблицы 640 px. Перестройка без прокрутки показана ниже, в E67 и E68.
 
 ```html
 <div class="core-col core-g-6x">
   <h3 class="core-text core-text-bold">План выпуска</h3>
   <p class="core-text core-text-s">Пять этапов, ответственные и сроки. Суммы условные.</p>
   <div class="core-x-scroll" tabindex="0" role="region" aria-label="План выпуска; таблицу можно прокручивать">
-    <table class="core-table core-w-128x core-table-border-x core-table-border-head" style="--w: 680px">
+    <table class="core-table core-w-320x core-table-border-x core-table-border-head">
       <caption>Согласованный объём работ</caption>
       <thead><tr><th scope="col">Этап</th><th scope="col">Ответственный</th><th scope="col">Срок</th><th scope="col">Часы</th><th scope="col">Статус</th></tr></thead>
       <tbody>

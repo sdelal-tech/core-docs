@@ -88,13 +88,13 @@
 
 ### E55. Кнопка в углу и отдельный анимируемый потомок
 
-Inline-переменные явно задают внутренний отступ от угла. Вращение не перезаписывает transform позиционирующего узла.
+`core-p-6x` на позиционирующей обёртке задаёт отступ иконки от угла. Вращение не перезаписывает transform позиционирующего узла.
 
 ```html
-<article class="core-card core-col core-h-unset core-p-12x" style="--h: 160px">
+<article class="core-card core-col core-h-80x core-p-12x">
   <h3 class="core-text core-text-l core-text-bold">Состояние синхронизации</h3>
   <p class="core-text">Координаты и вращение находятся на разных узлах.</p>
-  <span class="core-abs core-abs-top-right" style="--t: 12px; --r: 12px">
+  <span class="core-abs core-abs-top-right core-p-6x">
     <span class="core-icon-spinner core-icon-8x core-animate:spin core-animate-time-4x" role="img" aria-label="Синхронизация"></span>
   </span>
 </article>

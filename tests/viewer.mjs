@@ -41,6 +41,17 @@ export async function checkViewer(page,check) {
   await page.locator('#theme-toggle').click();
   await page.waitForFunction(()=>document.querySelector('[data-example="E77"]').dataset.ok==='true');
  }
+ for(const design of ['core','ss','nk','nkui'])for(const mode of ['light','dark']){
+  await page.locator('#theme-select').selectOption(design);
+  if(await page.locator('html').getAttribute('data-theme')!==mode)await page.locator('#theme-toggle').click();
+  const selected=page.locator('.nav-link[aria-current="page"]');await selected.scrollIntoViewIfNeeded();await page.mouse.move(1400,900);
+  const text=await selected.locator('span').first().evaluate(e=>getComputedStyle(e).color);
+  await selected.hover();await page.waitForTimeout(250);check(`${design}/${mode} selected navigation hover preserves text color`,await selected.locator('span').first().evaluate(e=>getComputedStyle(e).color)===text);
+  await page.keyboard.press('Tab');await selected.focus();check(`${design}/${mode} selected navigation retains focus`,await selected.evaluate(e=>getComputedStyle(e).outlineStyle!=='none'));
+  await page.mouse.down();await page.waitForTimeout(250);check(`${design}/${mode} selected navigation press preserves text color`,await selected.locator('span').first().evaluate(e=>getComputedStyle(e).color)===text);
+  await page.mouse.move(1400,900);await page.mouse.up();await selected.evaluate(e=>e.blur());
+ }
+ await page.locator('#theme-select').selectOption('nk');if(await page.locator('html').getAttribute('data-theme')==='dark')await page.locator('#theme-toggle').click();
  // SS requires its own mode classes, not the generic Core light/dark class.
  await page.locator('#theme-select').selectOption('ss');
  await page.waitForFunction(()=>document.documentElement.classList.contains('core-theme-ss-light'));
@@ -98,7 +109,7 @@ export async function checkViewer(page,check) {
   });
   check(`all chapters fit at ${width}: ${overflow.join(',')}`,overflow.length===0);
  }
- check('all HTML and JS demo sources have highlighted tokens',await page.evaluate(()=>[...document.querySelectorAll('.example pre code')].every(e=>e.querySelector('span'))));
+ check('all visited active demo sources have highlighted tokens',await page.evaluate(()=>[...document.querySelectorAll('.chapter:not(.core-hide) .example pre code')].every(e=>e.querySelector('.hljs-tag,.hljs-keyword'))));
  await page.evaluate(()=>location.hash='start');
  await page.waitForFunction(()=>!document.getElementById('start').classList.contains('core-hide'));
  await page.screenshot({path:'test-results/viewer-desktop.png'});

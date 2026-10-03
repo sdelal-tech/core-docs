@@ -1,7 +1,7 @@
 import {readFileSync as read, writeFileSync as write, rmSync, mkdirSync, cpSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {Marked, Renderer} from 'marked';
-import {highlightCode} from './highlight.mjs';
+import {escapeCode,codeLanguage,buildHighlightAssets} from './highlight.mjs';
 import {buildReferences} from './references.mjs';
 
 // docs/ is disposable output. Copy only files intended for public readers.
@@ -10,6 +10,7 @@ mkdirSync('docs',{recursive:true});
 for(const name of ['README.md','AGENTS.md','chapters.json','chapters','reference'])
  cpSync(`content/${name}`,`docs/${name}`,{recursive:true});
 await buildReferences();
+buildHighlightAssets();
 execFileSync('python3',['tools/package-agent.py'],{stdio:'inherit',timeout:30000});
 
 const json=path=>JSON.parse(read(path,'utf8'));
@@ -21,16 +22,13 @@ const updatedLabel=updatedDate.split('-').reverse().join('.');
 const searchSections=[], pages=[], groups=new Map();
 const button='core-button core-button-s';
 const headerSize='core-h-36x m-core-h-32x core-noshrink';
-const navStyle='--theme-btn-bg:transparent;--theme-btn-bg-hover:var(--color-surface-alt);--theme-btn-bg-active:var(--color-surface-alt);--theme-btn-color:var(--color-text-primary);--theme-btn-color-hover:var(--color-text-primary);--theme-btn-color-active:var(--color-text-primary);--theme-btn-border:1px solid transparent;--theme-btn-border-hover:1px solid transparent;--theme-btn-border-active:1px solid transparent;--theme-btn-shadow:none;--theme-btn-shadow-hover:none;--transition-interactive:0s';
 const widths=['auto',390,720,721,997,998,1200];
-// Core's light scope resets typography. Keep the active design's font and scale.
-const inverseStyle=['--font-primary','--font-primary-unitsPerEm','--font-primary-ascender','--font-primary-descender','--font-primary-sCapHeight','--font-primary-sxHeight','--font-primary-center-compensation','--font-primary-l-h-compensation','--f-s-base'].map(token=>`${token}:inherit`).join(';');
-const inverseScope=`data-docs-inverse style="${inverseStyle}"`;
+const inverseScope='data-docs-inverse';
 
 function codeBlock(text,lang='текст',embedded=false) {
  return `<div class="code-block core-col core-g-0x core-border core-crop ${embedded?'core-border-t':'core-theme-dark core-bg core-color core-b-r-4x core-m-t-6x core-m-b-8x'}"${embedded?'':` ${inverseScope}`}>
 <div class="core-row core-nowrap core-y-center core-justify core-g-4x core-p-4x core-p-l-8x core-bg-surface core-border core-border-b"><span class="core-text core-text-xs core-text-mono">${esc(lang)}</span><button type="button" class="copy-button ${button}" aria-label="Копировать блок кода">Копировать</button></div>
-<div class="core-content"><pre class="core-m-t-0x core-m-b-0x core-b-r-0x core-p-8x"><code class="core-text-mono">${highlightCode(text,lang)}</code></pre></div>
+<div class="core-content"><pre class="core-m-t-0x core-m-b-0x core-b-r-0x core-p-8x"><code class="core-text-mono language-${codeLanguage(lang)}">${escapeCode(text)}</code></pre></div>
 </div>`;
 }
 function demo(id) {
@@ -53,7 +51,7 @@ function chapterNavigation(index,top=false) {
   const caption=`<span class="core-shrink">${label}</span>`;
   // Optional HTML word breaks keep long names inside narrow cards without CSS.
   const title=esc(c.navTitle).replace(/(\p{L}{8})(?=\p{L}{7})/gu,'$1<wbr>');
-  return `<a class="core-button core-col core-w-full core-x-${next?'end':'start'} core-g-3x core-shrink ${top?'core-h-56x core-p-6x':'core-h-unset core-p-8x'} core-text-${next?'right':'left'} core-border core-b-r-4x" style="${navStyle}" href="#${c.id}"><span class="core-row core-nowrap core-y-center core-g-3x core-text core-text-xs core-muted-4x">${next?caption+arrow:arrow+caption}</span><span class="core-col core-text core-text-s core-text-bold">${title}</span></a>`;
+  return `<a class="core-button core-button-transparent core-col core-w-full core-x-${next?'end':'start'} core-g-3x core-shrink ${top?'core-h-56x core-p-6x':'core-h-unset core-p-8x'} core-text-${next?'right':'left'} core-border core-b-r-4x" href="#${c.id}"><span class="core-row core-nowrap core-y-center core-g-3x core-text core-text-xs core-muted-4x">${next?caption+arrow:arrow+caption}</span><span class="core-col core-text core-text-s core-text-bold">${title}</span></a>`;
  };
  const tag=top?'nav':'footer',classes=top?'chapter-top-nav core-g-6x':'chapter-footer core-g-8x core-border core-border-t core-p-t-16x core-m-t-24x';
  return `<${tag} class="${classes} core-grid core-grid-2c" aria-label="Переходы по руководству">${link(previous,'Предыдущий раздел','arrow-left')}${link(next,'Следующий раздел','arrow-right')}</${tag}>`;
@@ -68,7 +66,7 @@ for(const [index,c] of chapters.entries()) {
   if(depth>1)headings.push({id,title:plain,depth});
   const permalink=`<a class="heading-link core-color core-muted-6x core-text-s core-m-l-3x" href="#${id}" aria-label="Ссылка на раздел: ${esc(plain)}">#</a>`;
   if(depth===1) return `<header class="chapter-header core-grid core-grid-2c t-core-grid-1c core-g-12x core-border core-border-b core-p-b-14x core-m-b-14x"><div class="chapter-heading core-shrink"><p class="core-text core-text-xs core-text-upper core-text-bold core-muted-4x core-m-b-6x">${esc(c.group)} / ${esc(c.navTitle)}</p><h1 id="${id}" tabindex="-1" class="core-text core-text-xxl m-core-text-xl core-text-bold">${title}</h1></div>${chapterNavigation(index,true)}</header>`;
-  return `<h${depth} id="${id}" tabindex="-1" class="core-text core-text-l core-text-bold core-m-t-18x core-m-b-6x"${depth===2?' style="--f-s:1.5em"':''}>${title}${permalink}</h${depth}>\n`;
+  return `<h${depth} id="${id}" tabindex="-1" class="core-text core-text-l core-text-bold core-m-t-18x core-m-b-6x">${title}${permalink}</h${depth}>\n`;
  };
  renderer.link=function({href,title,tokens}) {
   let target=href;const file=href?.split('/').pop()?.split('#')[0],found=chapters.find(x=>`${x.id}.md`===file);
@@ -117,7 +115,7 @@ for(const [index,c] of chapters.entries()) {
  const sections=body.split(/(?=^#{2,6} )/m);
  searchSections.push({id:c.id,chapter:c.id,chapterTitle:c.navTitle,title:c.title,text:sections[0]});
  sections.slice(1).forEach((text,i)=>searchSections.push({id:headings[i]?.id||c.id,chapter:c.id,chapterTitle:c.navTitle,title:headings[i]?.title||c.title,text}));
- const item=`<div class="nav-item core-col core-g-0x" data-chapter="${c.id}"><a class="nav-link core-button core-h-unset core-text-left core-row core-nowrap core-y-center core-g-3x core-text core-text-s core-p-3x core-p-l-5x core-p-r-5x core-b-r-3x core-w-full" style="${navStyle}" data-chapter="${c.id}" href="#${c.id}"><span class="core-grow core-shrink">${esc(c.navTitle)}</span><span class="nav-chevron core-icon-chevron-right core-icon-6x" aria-hidden="true"></span></a><div class="nav-submenu core-col core-g-0x core-p-l-8x core-p-b-3x core-hide">${headings.map(h=>`<a class="nav-sublink core-button core-row core-h-unset core-w-full core-text-left core-text core-text-xs core-color core-p-2x core-p-l-4x core-p-r-4x" style="${navStyle}" data-target="${h.id}" href="#${h.id}"><span class="nav-label core-col core-w-full core-shrink core-border core-border-l core-border-transparent core-p-l-4x core-muted-2x">${esc(h.title)}</span></a>`).join('')}</div></div>`;
+ const item=`<div class="nav-item core-col core-g-0x" data-chapter="${c.id}"><a class="nav-link core-button core-button-transparent core-h-unset core-text-left core-row core-nowrap core-y-center core-g-3x core-text core-text-s core-p-3x core-p-l-5x core-p-r-5x core-b-r-3x core-w-full" data-chapter="${c.id}" href="#${c.id}"><span class="core-grow core-shrink">${esc(c.navTitle)}</span><span class="nav-chevron core-icon-chevron-right core-icon-6x" aria-hidden="true"></span></a><div class="nav-submenu core-col core-g-0x core-p-l-8x core-p-b-3x core-hide">${headings.map(h=>`<a class="nav-sublink core-button core-button-transparent core-row core-h-unset core-w-full core-text-left core-text core-text-xs core-p-2x core-p-l-4x core-p-r-4x" data-target="${h.id}" href="#${h.id}"><span class="nav-label core-color core-col core-w-full core-shrink core-border core-border-l core-border-transparent core-p-l-4x core-muted-2x">${esc(h.title)}</span></a>`).join('')}</div></div>`;
  if(!groups.has(c.group))groups.set(c.group,[]);groups.get(c.group).push(item);
 }
 const navigation=[...groups].map(([name,items],index)=>`<section class="nav-group core-m-b-6x">${index?`<h2 class="core-text core-text-xs core-text-upper core-text-bold core-color core-muted-6x core-p-3x core-p-l-5x core-p-r-5x core-border core-border-b core-m-b-3x">${esc(name)}</h2>`:''}${items.join('\n')}</section>`).join('\n');
@@ -125,11 +123,13 @@ const data=JSON.stringify({version,chapters,examples,searchSections}).replaceAll
 const themeRuntime=read('content/viewer/themes.js','utf8');
 const app=read('content/viewer/app.js','utf8').replaceAll('</script','<\\/script');
 const html=`<!doctype html>
-<html lang="ru" class="core-solo core-col core-g-0x core-theme-light" data-theme="light" style="--f-s-base:16px"><head>
+<html lang="ru" class="core-solo core-col core-g-0x core-theme-light" data-theme="light"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Core — руководство</title>
 <meta name="description" content="Документация Core v${version}: ${chapters.length} раздела, ${examples.length} живых примера, CSS и JavaScript.">
 <link id="shell-core" rel="stylesheet" onload="this.dataset.state='ok'" onerror="this.dataset.state='error'" href="https://cdn.sdelal.tech/core/latest/core.css">
 <link id="shell-theme" rel="stylesheet" onload="this.dataset.state='ok'" onerror="this.dataset.state='error'" href="https://cdn.sdelal.tech/core/latest/theme-nk.css">
+<link id="syntax-light" rel="stylesheet" href="assets/highlight-light.css" media="not all">
+<link id="syntax-dark" rel="stylesheet" href="assets/highlight-dark.css" media="all">
 </head><body class="core-bg core-color core-w-full">
 <div id="document-shell" class="core-col core-g-0x">
 <header class="topbar ${headerSize} core-sticky core-row core-nowrap core-y-center core-g-6x m-core-g-3x core-p-8x core-p-l-10x core-p-r-20x m-core-p-6x m-core-p-l-8x m-core-p-r-8x core-bg core-border core-border-b">
@@ -147,7 +147,7 @@ const html=`<!doctype html>
 <footer class="core-col core-g-3x core-p-10x core-border core-border-t"><a class="${button} core-text-xs core-w-full core-g-3x core-m-b-5x" href="#agent-workflow">Документация для агента <span class="core-icon-arrow-right core-icon-6x" aria-hidden="true"></span></a><span class="core-text core-text-xs core-muted-4x">Core v${version}</span><span class="core-text core-text-xs core-muted-4x">Документация от <time datetime="${updatedDate}">${updatedLabel}</time></span></footer>
 </aside></div>
 <div id="workspace" class="core-z-0 core-grow core-shrink">
-<main id="main-content" tabindex="-1" class="core-section core-text m-core-text-s core-g-0x core-m-w-l core-p-20x core-p-l-10x core-p-t-16x m-core-p-8x m-core-p-t-14x" style="--f-s-s:0.875rem;--l-h-m:1.45em">
+<main id="main-content" tabindex="-1" class="core-section core-text m-core-text-s core-g-0x core-m-w-l core-p-20x core-p-l-10x core-p-t-16x m-core-p-8x m-core-p-t-14x">
 <p id="shell-status" class="core-text core-text-s core-p-6x" role="status">Загрузка оформления с CDN…</p>
 <section id="search-results" class="core-hide" aria-label="Результаты поиска"></section>${pages.join('\n')}
 </main></div></div></div>

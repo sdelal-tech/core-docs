@@ -5,7 +5,7 @@ import {pathToFileURL} from 'node:url';
 import assert from 'node:assert/strict';
 
 export async function checkMediaCrops(page,check) {
- await page.goto(new URL('#media',page.url()).href,{waitUntil:'networkidle'});
+ await page.evaluate(()=>location.hash='media');
  await page.waitForFunction(()=>['E52','E53'].every(id=>document.querySelector(`[data-example="${id}"]`).dataset.ok==='true'));
  for(const width of [390,1200]) {
   for(const id of ['E52','E53']) {
@@ -147,7 +147,8 @@ export async function checkCatalogue(page,check,out='test-results') {
  await popup.locator('[role="dialog"]').screenshot({path:`${out}/catalogue-side-panel.png`});
  await popup.locator('[data-popup-close]').click();
  await page.locator('#theme-select').selectOption('nk');
- await popup.waitForFunction(()=>document.documentElement.dataset.design==='nk');
+ // Theme typography can move this closed popup iframe outside the viewport.
+ await popup.waitForFunction(()=>document.documentElement.dataset.design==='nk',null,{polling:100});
  await page.emulateMedia({reducedMotion:'no-preference'});
 }
 

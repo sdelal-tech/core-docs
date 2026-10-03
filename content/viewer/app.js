@@ -58,12 +58,30 @@
  function setActiveSubsection(id){nav.querySelectorAll('.nav-sublink').forEach(link=>{const active=link.dataset.target===id,label=link.querySelector('.nav-label');link.classList.toggle('core-text-bold',active);label.classList.toggle('core-muted-2x',!active);label.classList.toggle('core-border-transparent',!active);label.classList.toggle('core-border-accent',active);for(const name of ['core-bg-accent','core-bg-opacity:30'])link.classList.toggle(name,active);if(active)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');});}
  let scrollQueued=false;
  window.addEventListener('scroll',()=>{if(scrollQueued)return;scrollQueued=true;requestAnimationFrame(()=>{scrollQueued=false;if(search.value||anchorLock)return;let current='';for(const h of activeHeadings){if(h.getBoundingClientRect().top<=topbar.getBoundingClientRect().height+28)current=h.id;else break;}setActiveSubsection(current);});},{passive:true});
+ // Highlight only documentation snippets in the currently open chapter. The
+ // shared promise handles unavailable assets without interrupting the viewer.
+ let highlighter;
+ function highlightChapter(){
+  const article=document.getElementById(activeId);
+  if(!article.querySelector('pre code:not([data-highlighted]):not(.language-plaintext)'))return;
+  if(!highlighter)highlighter=new Promise(resolve=>{
+   const script=document.createElement('script');script.src='assets/highlight.js';
+   script.onload=()=>resolve(window.hljs||null);script.onerror=()=>resolve(null);
+   document.head.append(script);
+  });
+  highlighter.then(hljs=>{
+   if(!hljs)return;
+   document.getElementById(activeId).querySelectorAll('pre code:not([data-highlighted]):not(.language-plaintext)').forEach(code=>{
+    try{hljs.highlightElement(code);}catch{/* Source remains readable if a grammar cannot highlight it. */}
+   });
+  });
+ }
  function route(){
   let target;try{target=decodeURIComponent(location.hash.slice(1))||'overview';}catch{target='overview';}
   const candidate=target.split('--')[0],id=chapters.has(candidate)?candidate:'overview';if(!document.getElementById(target))target=id;
-  activeId=id;search.value='';results.replaceChildren();visible(results,false);
+  activeId=id;highlightChapter();search.value='';results.replaceChildren();visible(results,false);
   document.querySelectorAll('.chapter').forEach(node=>visible(node,node.id===id));
-  nav.querySelectorAll('.nav-item').forEach(item=>{const active=item.dataset.chapter===id,link=item.querySelector('.nav-link');visible(item.querySelector('.nav-submenu'),active);link.classList.toggle('core-bg-accent',active);link.classList.toggle('core-color-black',active);link.classList.toggle('core-text-bold',active);const chevron=item.querySelector('.nav-chevron');chevron.classList.toggle('core-icon-chevron-right',!active);chevron.classList.toggle('core-icon-chevron-bottom',active);if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
+  nav.querySelectorAll('.nav-item').forEach(item=>{const active=item.dataset.chapter===id,link=item.querySelector('.nav-link');visible(item.querySelector('.nav-submenu'),active);link.classList.toggle('core-bg-accent',active);link.querySelectorAll(':scope > span').forEach(label=>label.classList.toggle('core-color-black',active));link.classList.toggle('core-text-bold',active);const chevron=item.querySelector('.nav-chevron');chevron.classList.toggle('core-icon-chevron-right',!active);chevron.classList.toggle('core-icon-chevron-bottom',active);if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
   document.title=`${chapters.get(id).navTitle} — Core`;activeHeadings=[...document.querySelectorAll(`#${CSS.escape(id)} h2[id], #${CSS.escape(id)} h3[id]`)];
   setActiveSubsection('');
   const fromMenu=menuButton.getAttribute('aria-expanded')==='true';closeMenu();releaseAnchor();if(target.includes('--')){anchorLock=target;anchorTimer=setTimeout(releaseAnchor,18000);}
@@ -259,6 +277,8 @@ ${styles}</head>
   function applyTheme() {
     releaseAnchor(); root.dataset.theme=theme;
     themeController.mode(theme);
+    document.getElementById('syntax-light').media=theme==='dark'?'all':'not all';
+    document.getElementById('syntax-dark').media=theme==='light'?'all':'not all';
     themeButton.setAttribute('aria-pressed',String(theme==='dark'));
     themeButton.setAttribute('aria-label',theme==='dark'?'Включить светлую тему':'Включить тёмную тему');
     themeButton.querySelector('.theme-label').textContent=theme==='dark'?'Светлая тема':'Тёмная тема';

@@ -4,6 +4,7 @@ import {createServer} from 'node:http';
 import {resolve,extname,sep} from 'node:path';
 import assert from 'node:assert/strict';
 import {checkNkui} from './nkui.mjs';
+import {checkHighlighting} from './highlight.mjs';
 import {checkInverseTheme} from './inverse-theme.mjs';
 import {checkCatalogue,checkMediaCrops} from './catalogue.mjs';
 import {checkDemoWidths} from './demo-width.mjs';
@@ -11,7 +12,7 @@ const failuresOnly=process.argv.includes('--failures'),root=resolve('docs'),out=
 const data=JSON.parse(read('docs/reference/examples.json','utf8')).examples;
 const chapters=JSON.parse(read('docs/chapters.json','utf8'));
 const checks=[],errors=[],cdnResponses={shell:0,iframe:0,modules:0};let browser;
-const server=createServer((req,res)=>{try{const path=resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://localhost').pathname));if(!path.startsWith(root+sep))throw new Error('outside docs');res.setHeader('Content-Type',({'.html':'text/html; charset=utf-8','.json':'application/json','.md':'text/plain; charset=utf-8'})[extname(path)]||'text/plain');res.end(read(path));}catch{res.writeHead(404).end();}});
+const server=createServer((req,res)=>{try{const path=resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://localhost').pathname));if(!path.startsWith(root+sep))throw new Error('outside docs');res.setHeader('Content-Type',({'.html':'text/html; charset=utf-8','.json':'application/json','.md':'text/plain; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8'})[extname(path)]||'text/plain');res.end(read(path));}catch{res.writeHead(404).end();}});
 await new Promise(done=>server.listen(0,'127.0.0.1',done));const url=`http://127.0.0.1:${server.address().port}/index.html`;
 try {
  browser=await chromium.launch({headless:true});
@@ -33,6 +34,7 @@ try {
  check('shell CSS loaded',await page.locator('#shell-status').isHidden());
  check('42 chapters / 87 cards',await page.locator('.chapter').count()===42&&await page.locator('.example').count()===87);
  if(!failuresOnly) {
+  await checkHighlighting(browser,url,check);
   await checkDemoWidths(browser,url,check);
   await go('start');check('iframes load Core from the CDN',cdnResponses.iframe>0);
   const themeFrame=await frame('E01');
@@ -74,6 +76,17 @@ try {
   }
   await go('lists-tables');await page.locator('[data-example="E68"] .demo-width[data-width="390"]').click();const registry=await frame('E68');await waitFrame(registry,()=>innerWidth===390);check('registry single column on mobile',await registry.locator('article').first().evaluate(e=>{const boxes=[...e.children].map(n=>n.getBoundingClientRect());return boxes.every((b,i)=>!i||(Math.abs(b.x-boxes[0].x)<1&&b.y>=boxes[i-1].bottom));}));
   await page.evaluate(()=>{window.hiddenMeasures=[];addEventListener('message',e=>{if(e.data?.id==='E68'&&e.data.state==='resize')window.hiddenMeasures.push(e.data.height);});});await go('overview');await registry.evaluate(()=>{dispatchEvent(new Event('resize'));return new Promise(done=>setTimeout(done,150));});check('hidden chapter preserves last iframe height',!await page.evaluate(()=>window.hiddenMeasures.includes(64)));
+  await go('position');const corner=await frame('E55');
+  const placement=await corner.evaluate(()=>{
+   const article=document.querySelector('article'),wrapper=article.querySelector('.core-abs'),icon=wrapper.firstElementChild;
+   icon.classList.remove('core-animate:spin');const a=article.getBoundingClientRect(),i=icon.getBoundingClientRect(),w=wrapper.getBoundingClientRect();
+   const baseline=article.cloneNode(true),reference=baseline.querySelector('.core-abs');
+   reference.classList.remove('core-p-6x');reference.style.setProperty('--t','12px');reference.style.setProperty('--r','12px');
+   article.after(baseline);const b=baseline.getBoundingClientRect(),r=reference.firstElementChild.getBoundingClientRect();baseline.remove();
+   return {height:a.height,padding:getComputedStyle(wrapper).padding,top:i.top-a.top,right:a.right-i.right,referenceTop:r.top-b.top,referenceRight:b.right-r.right};
+  });
+  check('E55 keeps 160px height and the original icon coordinates with native padding',placement.height===160&&placement.padding==='12px'&&Math.abs(placement.top-placement.referenceTop)<.5&&Math.abs(placement.right-placement.referenceRight)<.5);
+  await corner.locator('body').screenshot({path:resolve(out,'position-E55.png')});
   await go('interaction');const motion=await frame('E58');await page.emulateMedia({reducedMotion:'reduce'});await waitFrame(motion,()=>!document.getElementById('progress-icon').classList.contains('core-animate:spin'));checks.push('reduced motion removes animation');await page.emulateMedia({reducedMotion:'no-preference'});await waitFrame(motion,()=>document.getElementById('progress-icon').classList.contains('core-animate:spin'));checks.push('motion preference change restores animation');
   // Exact CSS assertions belong to the documented version, not the mutable alias.
   // All manual interactions above use latest; this isolated probe loads the manifest version from CDN.
