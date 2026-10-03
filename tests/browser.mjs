@@ -8,6 +8,7 @@ import {checkHighlighting} from './highlight.mjs';
 import {checkInverseTheme} from './inverse-theme.mjs';
 import {checkCatalogue,checkMediaCrops} from './catalogue.mjs';
 import {checkDemoWidths} from './demo-width.mjs';
+import {checkCoreVersion} from './core-version.mjs';
 const failuresOnly=process.argv.includes('--failures'),root=resolve('docs'),out=resolve('test-results');mkdirSync(out,{recursive:true});
 const data=JSON.parse(read('docs/reference/examples.json','utf8')).examples;
 const chapters=JSON.parse(read('docs/chapters.json','utf8'));
@@ -36,6 +37,7 @@ try {
  if(!failuresOnly) {
   await checkHighlighting(browser,url,check);
   await checkDemoWidths(browser,url,check);
+  await checkCoreVersion(browser,url,check);
   await go('start');check('iframes load Core from the CDN',cdnResponses.iframe>0);
   const themeFrame=await frame('E01');
   const lightShell=await page.evaluate(()=>getComputedStyle(document.body).backgroundColor),lightFrame=await themeFrame.evaluate(()=>getComputedStyle(document.body).backgroundColor);
@@ -105,7 +107,7 @@ try {
    return {font:getComputedStyle(document.getElementById('font-sample')).fontSize,weight:getComputedStyle(document.getElementById('font-sample')).fontWeight,padding:getComputedStyle(document.getElementById('directional-padding')).paddingTop,inherited:['--t','--b','--b-r'].map(name=>getComputedStyle(document.getElementById('inherited-coordinates')).getPropertyValue(name).trim())};
   });
   check('font scale follows Core base independently of html rem',updatedContracts.font==='20px');
-  check('thin text uses weight 300',updatedContracts.weight==='300');
+  check('thin without a token inherits the parent weight',updatedContracts.weight===await probe.locator('#font-sample').evaluate(e=>getComputedStyle(e.parentElement).fontWeight));
   check('directional padding works without a general padding token',updatedContracts.padding==='8px');
   check('coordinates and radius do not inherit into children',updatedContracts.inherited.every(value=>value===''));
   for(const width of [720,721,997,998]){await page.locator(`[data-example="E01"] .demo-width[data-width="${width}"]`).click();await waitFrame(probe,w=>innerWidth===w,width);const values=await probe.evaluate(()=>({icon:getComputedStyle(document.getElementById('icon'),'::before').width,height:getComputedStyle(document.getElementById('size')).height,top:getComputedStyle(document.getElementById('position')).top,t:getComputedStyle(document.getElementById('position')).getPropertyValue('--t').trim(),heading:getComputedStyle(document.getElementById('heading')).fontSize}));check(`icon cascade ${width}`,values.icon===(width<=720?'12px':'16px'));check(`170x resolves ${width}`,values.height==='340px');check(`mobile positioning alias ${width}`,width<=720?values.top==='0px':values.t==='');}

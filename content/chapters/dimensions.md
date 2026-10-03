@@ -24,6 +24,14 @@
 
 `core-j-over` и `core-j-ch-over` добавляют половину доли для частично видимого следующего элемента. Это полезно в горизонтальной ленте. Не применяйте такую механику поверх grid-треков без отдельного обоснования: grid уже распределяет ширины.
 
+## Сброс счётчика: `core-j-auto`
+
+В v194 `core-j-auto` задаёт только `--c: revert`; `t-core-j-auto` включается при ≤997 px, `m-core-j-auto` — при ≤720 px. Эти классы не задают `width: auto` напрямую и не отменяют gap, overlap или основание `core-j`.
+
+Если у предка нет `--c`, адаптивный auto на элементе с `core-j core-j-3c` делает расчёт `--item-w` недействительным: width и flex-basis переходят к auto, ширина зависит от содержимого. Рост и сжатие проверяйте отдельно. Если предок задаёт `--c`, `revert` возвращает наследуемое значение и дробная ширина может сохраниться.
+
+В каждом breakpoint auto расположен **до** фиксированных `j-1c…9c` / `j-ch-1c…9c`. Поэтому `core-j-auto core-j-3c` сохраняет 3, а `core-j-3c m-core-j-auto m-core-j-1c` на мобильном получает 1. `core-j-ch-3c > *` также специфичнее `.core-j-auto` на ребёнке: auto не отменяет счётчик, заданный этим родителем. Inline `--c` сильнее этих классов. Порядок слов в class ничего не меняет.
+
 ## Слайдер без JavaScript
 
 `core-slider` — flex без переноса, горизонтальная прокрутка, gap 20 px, scroll-snap, скрытый scrollbar. `core-slider-center` центрирует snap-цель ребёнка. `core-slider-masked` добавляет крайние маски, внутренние поля и отрицательные внешние отступы. Параметр `--mask-padding` участвует в геометрии; часть градиентных величин в исходнике остаётся привязана к spacing-токенам.
@@ -50,13 +58,23 @@
 
 ### E13. Конфигурация долей на родителе
 
-core-g-6x указан явно даже при таком же default gap у строки: он передаёт --parent-g каждому прямому ребёнку.
+Явный core-g-6x передаёт --parent-g. Первый ряд задаёт счётчик через core-j-ch-3c; второй сравнивает auto, адаптивный сброс и конфликт с фиксированным 3c.
 
 ```html
-<div class="core-row core-j-ch core-j-ch-3c m-core-j-ch-1c core-g-6x">
-  <div class="core-card">Один</div>
-  <div class="core-card">Два</div>
-  <div class="core-card">Три</div>
+<div class="core-col core-g-8x">
+  <span class="core-text core-text-s">Счётчик родителя: auto на ребёнке сохраняет долю</span>
+  <div class="core-row core-j-ch core-j-ch-3c m-core-j-ch-1c core-g-6x">
+    <div class="core-card">Один</div>
+    <div class="core-card">Два</div>
+    <div class="core-card core-j-auto">Три · auto</div>
+  </div>
+  <span class="core-text core-text-s">Локальные доли: tablet/mobile возвращают ширину содержимого</span>
+  <div class="core-row core-g-6x">
+    <div class="core-card core-j core-j-auto">auto</div>
+    <div class="core-card core-j core-j-3c t-core-j-auto">tablet auto</div>
+    <div class="core-card core-j core-j-3c m-core-j-auto">mobile auto</div>
+    <div class="core-card core-j core-j-auto core-j-3c">auto + 3c = 3c</div>
+  </div>
 </div>
 ```
 

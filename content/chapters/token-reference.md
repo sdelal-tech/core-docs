@@ -171,10 +171,11 @@
 --l-h-head-l: 1.12em
 --l-h-head-xl: 1.12em
 --l-h-head-xxl: 1.05em
---f-w-thin: 300
 --f-w-semibold: 500
 --f-w-bold: 600
 ```
+
+`--f-w-thin` отсутствует среди defaults v194. Класс `core-text-thin` всё ещё обращается к нему без fallback; явное значение и наследование разобраны в [типографике](typography.md). SS переопределяет `--f-w-normal` на 460 и на 480 при ≤720 px.
 
 ## Семантические цвета
 

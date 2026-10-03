@@ -30,6 +30,8 @@
 
 `core-x-start/center/end` и `core-y-start/center/end` задают физическое выравнивание по X/Y через переменные. У строки X соответствует `justify-content`, Y — `align-items`; у колонки наоборот. `core-y-baseline` предназначен для строчного сценария.
 
+В v194 эти правила также применяются к `core-row-reverse` / `core-col-reverse` и их `t-` / `m-` вариантам. `core-x-start` / `core-y-start` передают CSS-значение `start`, поэтому в обычном горизонтальном LTR-контексте группа остаётся слева / сверху даже при reverse; меняется порядок детей. Это отличается от `flex-start`, который следует направлению главной flex-оси. Center сохраняет геометрический центр. Адаптивное направление выбирает соответствующую пару свойств: при ≤997 px для `t-`, при ≤720 px для `m-`.
+
 `core-center` задаёт центрирование по обеим осям. `core-justify` означает `justify-content: space-between`. `core-justify-start/center/end` и `core-align-start/center/end/baseline` относятся непосредственно к flex-свойствам: их смысл поворачивается вместе с направлением потока. Не смешивайте две модели без причины.
 
 ## Выбор конструкции
@@ -164,20 +166,41 @@ core-grow и core-shrink расположены на текстовой коло
 
 ### E08. Физические оси в строке и колонке
 
-Смена потока не меняет смысл физических осей x/y. Одинаковые элементы выровнены по центру в обоих направлениях.
+Прямой и обратный потоки центрируются по X/Y. Последняя карточка меняет направление на границах 997/720 px; DOM сохраняет порядок «Первый → Второй».
 
 ```html
 <div class="core-grid core-grid-2c m-core-grid-1c core-g-8x">
   <div class="core-col core-g-8x">
     <span class="core-text core-text-s core-text-mono">core-row</span>
-    <div class="core-card core-row core-x-center core-y-center core-h-80x">
+    <div class="core-card core-row core-nowrap core-x-center core-y-center core-h-80x">
       <span class="core-badge">Первый</span>
       <span class="core-badge">Второй</span>
     </div>
   </div>
   <div class="core-col core-g-8x">
     <span class="core-text core-text-s core-text-mono">core-col</span>
-    <div class="core-card core-col core-x-center core-y-center core-h-80x">
+    <div class="core-card core-col core-nowrap core-x-center core-y-center core-h-80x">
+      <span class="core-badge">Первый</span>
+      <span class="core-badge">Второй</span>
+    </div>
+  </div>
+  <div class="core-col core-g-8x">
+    <span class="core-text core-text-s core-text-mono">core-row-reverse</span>
+    <div class="core-card core-row-reverse core-nowrap core-x-center core-y-center core-h-80x">
+      <span class="core-badge">Первый</span>
+      <span class="core-badge">Второй</span>
+    </div>
+  </div>
+  <div class="core-col core-g-8x">
+    <span class="core-text core-text-s core-text-mono">core-col-reverse</span>
+    <div class="core-card core-col-reverse core-nowrap core-x-center core-y-center core-h-80x">
+      <span class="core-badge">Первый</span>
+      <span class="core-badge">Второй</span>
+    </div>
+  </div>
+  <div class="core-col core-g-8x">
+    <span class="core-text core-text-s core-text-mono">row → t-row-reverse → m-col-reverse</span>
+    <div class="core-card core-row t-core-row-reverse m-core-col-reverse core-nowrap core-x-center core-y-center core-h-80x">
       <span class="core-badge">Первый</span>
       <span class="core-badge">Второй</span>
     </div>

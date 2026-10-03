@@ -53,10 +53,10 @@ test('live CDN assets are available and version drift is reported', {timeout:300
 });
 test('published renamed classes and tokens are indexed', () => {
  const c=json('docs/reference/classes.json').classes,t=json('docs/reference/tokens.json').tokens;
- for(const k of ['core-icon-chevron','core-table-border-head','t-core-nogrow','m-core-noshrink','core-animate:spin','core-text-thin','core-t-56x','core-t-64x','t-core-t-56x','t-core-t-64x','m-core-t-56x','m-core-t-64x']) assert.ok(c[k],k);
+ for(const k of ['core-icon-chevron','core-table-border-head','t-core-nogrow','m-core-noshrink','core-animate:spin','core-text-thin','core-j-auto','t-core-j-auto','m-core-j-auto','core-t-56x','core-t-64x','t-core-t-56x','t-core-t-64x','m-core-t-56x','m-core-t-64x']) assert.ok(c[k],k);
  for(const k of ['core-icon-shevron','core-heading-underline','t-nogrow','core-spin']) assert.equal(c[k],undefined,k);
  assert.ok(t['--s-170x']);
- assert.ok(t['--f-w-thin'].some(entry=>entry.file==='core.css'&&entry.value==='300'));
+ assert.equal(t['--f-w-thin'],undefined,'v194 has no default thin token');
  assert.ok(t['--theme-btn-bg'].some(entry=>entry.file==='theme-nkui.css'&&entry.value==='var(--nkui-control-bg)'));
  assert.ok(t['--nkui-segment-height'].some(entry=>entry.file==='theme-nkui.css'));
 });

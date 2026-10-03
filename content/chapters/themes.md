@@ -41,7 +41,7 @@ function setTheme(mode) {
 
 ## NKUI: палитра и компактные контролы
 
-Подключите `theme-nkui.css` после `core.css` и задайте обычный режим `core-theme-light` или `core-theme-dark`. Отдельного класса `core-theme-nkui` нет. Тема сама импортирует `latest/theme-nk.css` со шрифтом Inter; отдельные CSS/JS библиотеки NKUI не нужны. Даже файл NKUI из `v191/` содержит импорт NK из изменяемого `latest/`: закрепление URL одного файла не закрепляет все его зависимости.
+Подключите `theme-nkui.css` после `core.css` и задайте обычный режим `core-theme-light` или `core-theme-dark`. Отдельного класса `core-theme-nkui` нет. Тема сама импортирует `latest/theme-nk.css` со шрифтом Inter; отдельные CSS/JS библиотеки NKUI не нужны. Даже файл NKUI из `v194/` содержит импорт NK из изменяемого `latest/`: закрепление URL одного файла не закрепляет все его зависимости.
 
 ```html
 <link rel="stylesheet" href="https://cdn.sdelal.tech/core/latest/core.css">
@@ -69,7 +69,7 @@ function setTheme(mode) {
 
 ## SS и TG
 
-**SS** подключает Jost и задаёт три явных режима: `core-theme-ss-light`, `core-theme-ss-dark`, `core-theme-ss-black`. Одной загрузки файла недостаточно: добавьте класс контейнеру или `html`. Общие правила действуют на `[class*="core-theme-ss"]`: насыщенность 430, на ширине до 720 px — 450; предельная desktop-ширина 1420 px.
+**SS** подключает Jost и задаёт три явных режима: `core-theme-ss-light`, `core-theme-ss-dark`, `core-theme-ss-black`. Одной загрузки файла недостаточно: добавьте класс контейнеру или `html`. Общие правила действуют на `[class*="core-theme-ss"]`: `--f-w-normal: 460`, на ширине до 720 px включительно — 480; предельная desktop-ширина 1420 px.
 
 ```html
 <link rel="stylesheet" href="https://cdn.sdelal.tech/core/latest/core.css">
@@ -88,7 +88,7 @@ function setTheme(mode) {
 
 ### E22. Светлая и тёмная области в одной странице
 
-В каждом scope явно задана поверхность; переключатель токенов не рассматривается как самостоятельная заливка.
+В каждом scope явно задана поверхность. SS подключена отдельно: обычный вес меняется 460 → 480 при ≤720 px.
 
 ```html
 <div class="core-grid core-grid-2c m-core-grid-1c">
@@ -100,6 +100,11 @@ function setTheme(mode) {
   <section class="core-theme-dark core-bg core-color core-card core-col">
     <h3 class="core-text core-text-bold">Тёмная область</h3>
     <input class="core-input" aria-label="Тёмная область: название" placeholder="Название">
+    <button type="button" class="core-button core-button-primary">Продолжить</button>
+  </section>
+  <section class="core-solo core-theme-ss-light core-bg core-color core-card core-col">
+    <h3 class="core-text core-text-bold">SS · обычный вес</h3>
+    <p class="core-text">460 на широком экране, 480 при ≤720 px</p>
     <button type="button" class="core-button core-button-primary">Продолжить</button>
   </section>
 </div>
