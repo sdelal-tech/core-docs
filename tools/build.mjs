@@ -1,5 +1,5 @@
 import {readFileSync as read, writeFileSync as write, rmSync, mkdirSync, cpSync} from 'node:fs';
-import {execFileSync} from 'node:child_process';
+import {packageAgent} from './package-agent.mjs';
 import {Marked, Renderer} from 'marked';
 import {escapeCode,codeLanguage,buildHighlightAssets} from './highlight.mjs';
 import {buildReferences} from './references.mjs';
@@ -11,7 +11,7 @@ for(const name of ['README.md','AGENTS.md','chapters.json','chapters','reference
  cpSync(`content/${name}`,`docs/${name}`,{recursive:true});
 await buildReferences();
 buildHighlightAssets();
-execFileSync('python3',['tools/package-agent.py'],{stdio:'inherit',timeout:30000});
+packageAgent();
 
 const json=path=>JSON.parse(read(path,'utf8'));
 const esc=value=>String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
